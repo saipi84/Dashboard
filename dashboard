@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ZSVA Dashboard 2026</title>
+    
+    <!-- AppsGeyser specific meta tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#2563eb">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        /* MOBILE-FIRST STYLES */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            overflow-x: hidden;
+            padding-bottom: 60px;
+        }
+        
+        /* HEADER */
+        .app-header {
+            background: white;
+            padding: 12px 16px;
+            border-bottom: 3px solid #2563eb;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #0f172a;
+            text-align: center;
+            margin: 0;
+        }
+        
+        .header-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            margin: 4px 0 0 0;
+            font-weight: 600;
+        }
+        
+        /* BOTTOM NAVIGATION */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            z-index: 1001;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .nav-item.active {
+            color: #2563eb;
+            background: rgba(37, 99, 235, 0.05);
+        }
+        
+        .nav-icon {
+            font-size: 16px;
+        }
+        
+        /* MOBILE DASHBOARD */
+        .mobile-dashboard {
+            padding: 16px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 900;
+            color: #2563eb;
+        }
+        
+        .highlight-card {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: white;
+            grid-column: 1 / -1;
+        }
+        
+        .highlight-card .stat-value {
+            color: white;
+        }
+        
+        /* MOBILE TABLE VIEWS */
+        .section {
+            display: none;
+            padding: 16px;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .month-selector {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            padding: 16px;
+            margin: -16px -16px 16px -16px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .month-btn {
+            padding: 10px 16px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .month-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .mobile-table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .mobile-table-header {
+            background: #f8fafc;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .mobile-table-row {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .mobile-table-row:last-child {
+            border-bottom: none;
+        }
+        
+        .row-date {
+            font-weight: 800;
+            font-size: 14px;
+            color: #0f172a;
+            width: 70px;
+            flex-shrink: 0;
+        }
+        
+        .row-inputs {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-right: 8px;
+        }
+        
+        .mobile-input {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            min-width: 60px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .mobile-select {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            min-width: 70px;
+            text-align: center;
+            background: white;
+            flex-shrink: 0;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+            padding-right: 24px;
+        }
+        
+        /* STATUS BADGES */
+        .status-ok {
+            background-color: #dcfce7 !important;
+            border-color: #10b981 !important;
+        }
+        
+        .status-defekt {
+            background-color: #fee2e2 !important;
+            border-color: #ef4444 !important;
+        }
+        
+        .status-nb {
+            background-color: #fef3c7 !important;
+            border-color: #f59e0b !important;
+        }
+        
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        /* ACTION BUTTONS */
+        .action-buttons {
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            z-index: 1002;
+        }
+        
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        /* LOADING */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f1f5f9;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* TOUCH FRIENDLY */
+        button, select, input {
+            font-size: 16px; /* Prevents iOS zoom */
+        }
+        
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 0;
+            background: transparent;
+        }
+        
+        /* PULL TO REFRESH */
+        .refresh-indicator {
+            text-align: center;
+            padding: 10px;
+            color: #64748b;
+            font-size: 12px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <div class="app-header">
+        <h1 class="header-title">ZSVA Dashboard 2026</h1>
+        <p class="header-subtitle" id="current-date">30. 1. 2026</p>
+        
+        <div class="action-buttons">
+            <button class="action-btn" onclick="showExportModal()">📊</button>
+            <button class="action-btn" onclick="syncData()">🔄</button>
+        </div>
+    </div>
+    
+    <!-- MAIN CONTENT -->
+    <div id="section-dashboard" class="section active">
+        <div class="mobile-dashboard">
+            <div class="dashboard-grid">
+                <div class="stat-card highlight-card">
+                    <div class="stat-label">Aktuelles Datum</div>
+                    <div class="stat-value" id="mobile-date">30. 1. 2026</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">RDG Status</div>
+                    <div class="stat-value" id="mobile-rdg">0/12</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Seal Status</div>
+                    <div class="stat-value" id="mobile-seal">0/5</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Nasszone</div>
+                    <div class="stat-value" id="mobile-nass">0/10</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Monatsämtli</div>
+                    <div class="stat-value" id="mobile-monat">0/5</div>
+                </div>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div style="background: white; border-radius: 12px; padding: 16px; margin-top: 16px; border: 1px solid #e2e8f0;">
+                <h3 style="font-size: 14px; font-weight: 800; margin: 0 0 12px 0; color: #0f172a;">Schnellzugriff</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    <button onclick="showSection('nass')" style="flex: 1; background: #eff6ff; border: 1px solid #2563eb; color: #2563eb; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 800;">💧 Nasszone</button>
+                    <button onclick="showSection('seal')" style="flex: 1; background: #f0fdf4; border: 1px solid #10b981; color: #10b981; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 800;">🔍 Seal Check</button>
+                    <button onclick="showSection('rdg')" style="flex: 1; background: #fef3c7; border: 1px solid #f59e0b; color: #f59e0b; padding: 12px; border-radius: 8px; font-size: 12px; font-weight: 800;">⚙️ RDG</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NASZONE -->
+    <div id="section-nass" class="section">
+        <div class="month-selector" id="nass-months"></div>
+        <div class="mobile-table-container">
+            <div class="mobile-table-header">Nasszone - Tägliche Kontrollen</div>
+            <div id="nass-rows"></div>
+        </div>
+    </div>
+    
+    <!-- SEAL CHECK -->
+    <div id="section-seal" class="section">
+        <div class="month-selector" id="seal-months"></div>
+        <div class="mobile-table-container">
+            <div class="mobile-table-header">Siegel Check - Status</div>
+            <div id="seal-rows"></div>
+        </div>
+    </div>
+    
+    <!-- RDG -->
+    <div id="section-rdg" class="section">
+        <div class="month-selector" id="rdg-months"></div>
+        <div class="mobile-table-container">
+            <div class="mobile-table-header">RDG Kontrollen</div>
+            <div id="rdg-rows"></div>
+        </div>
+    </div>
+    
+    <!-- MONATSÄMTLI -->
+    <div id="section-monat" class="section">
+        <div class="month-selector" id="monat-months"></div>
+        <div class="mobile-table-container">
+            <div class="mobile-table-header">Monatsämtli Packraum</div>
+            <div id="monat-rows"></div>
+        </div>
+    </div>
+    
+    <!-- BOTTOM NAVIGATION -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="showSection('dashboard')">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="showSection('nass')">
+            <span class="nav-icon">💧</span>
+            <span>Nasszone</span>
+        </button>
+        <button class="nav-item" onclick="showSection('seal')">
+            <span class="nav-icon">🔍</span>
+            <span>Seal Check</span>
+        </button>
+        <button class="nav-item" onclick="showSection('rdg')">
+            <span class="nav-icon">⚙️</span>
+            <span>RDG</span>
+        </button>
+        <button class="nav-item" onclick="showSection('monat')">
+            <span class="nav-icon">📦</span>
+            <span>Monatsämtli</span>
+        </button>
+    </div>
+    
+    <!-- EXPORT MODAL -->
+    <div class="modal-overlay" id="export-modal">
+        <div class="modal-content">
+            <h3 style="font-size: 16px; font-weight: 800; margin: 0 0 16px 0;">Daten Export</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button onclick="exportData('nass')" style="padding: 16px; background: #eff6ff; border: 1px solid #2563eb; border-radius: 8px; font-size: 14px; font-weight: 700; color: #2563eb;">📊 Nasszone Export</button>
+                <button onclick="exportData('seal')" style="padding: 16px; background: #f0fdf4; border: 1px solid #10b981; border-radius: 8px; font-size: 14px; font-weight: 700; color: #10b981;">📊 Seal Check Export</button>
+                <button onclick="exportData('rdg')" style="padding: 16px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; font-size: 14px; font-weight: 700; color: #f59e0b;">📊 RDG Export</button>
+                <button onclick="exportData('monat')" style="padding: 16px; background: #f1f5f9; border: 1px solid #64748b; border-radius: 8px; font-size: 14px; font-weight: 700; color: #64748b;">📊 Monatsämtli Export</button>
+                <button onclick="exportAllData()" style="padding: 16px; background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700;">📊 Alle Daten Exportieren</button>
+            </div>
+            <button onclick="hideExportModal()" style="margin-top: 20px; padding: 12px; background: none; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 700; width: 100%;">Schliessen</button>
+        </div>
+    </div>
+    
+    <!-- LOADING -->
+    <div class="loading" id="loading" style="display: none;">
+        <div class="loading-spinner"></div>
+    </div>
+
+<script>
+// Database (using localStorage for mobile)
+let db = {
+    nass: {},
+    seal: {},
+    rdg: {},
+    monat: {}
+};
+
+const months = [
+    "JANUAR", "FEBRUAR", "MÄRZ", "APRIL", "MAI", "JUNI", 
+    "JULI", "AUGUST", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DEZEMBER"
+];
+
+let currentMonth = new Date().getMonth();
+let currentDay = new Date().getDate();
+
+// Initialize app
+function initApp() {
+    loadData();
+    updateDate();
+    updateCounters();
+    initMonthSelectors();
+    showSection('dashboard');
+    
+    // Auto-save every 30 seconds
+    setInterval(saveData, 30000);
+}
+
+// Load data from localStorage
+function loadData() {
+    try {
+        const saved = localStorage.getItem('ZSVA_Dashboard_Data');
+        if (saved) {
+            db = JSON.parse(saved);
+        }
+    } catch (e) {
+        console.error('Error loading data:', e);
+    }
+}
+
+// Save data to localStorage
+function saveData() {
+    try {
+        localStorage.setItem('ZSVA_Dashboard_Data', JSON.stringify(db));
+    } catch (e) {
+        console.error('Error saving data:', e);
+    }
+}
+
+// Update date display
+function updateDate() {
+    const now = new Date();
+    const dateStr = `${currentDay}. ${currentMonth + 1}. 2026`;
+    document.getElementById('current-date').textContent = dateStr;
+    document.getElementById('mobile-date').textContent = dateStr;
+}
+
+// Update counters
+function updateCounters() {
+    const todayKey = `M${currentMonth}-D${currentDay}`;
+    
+    // Seal counter
+    let sealDone = 0;
+    for (let i = 1; i <= 4; i++) {
+        if (db.seal[`${todayKey}-S${i}`]?.status === 'OK') sealDone++;
+    }
+    if (db.seal[`${todayKey}-S5U`]?.status === 'OK' || db.seal[`${todayKey}-S5B`]?.status === 'OK') sealDone++;
+    document.getElementById('mobile-seal').textContent = `${sealDone}/5`;
+    
+    // RDG counter
+    let rdgDone = 0;
+    for (let i = 1; i <= 12; i++) {
+        if (db.rdg[`${todayKey}-R${i}`]?.status === 'OK') rdgDone++;
+    }
+    document.getElementById('mobile-rdg').textContent = `${rdgDone}/12`;
+    
+    // Nasszone counter
+    let nassDone = 0;
+    for (let i = 1; i <= 10; i++) {
+        if (db.nass[`${todayKey}-P${i}`]?.val) nassDone++;
+    }
+    document.getElementById('mobile-nass').textContent = `${nassDone}/10`;
+    
+    // Monatsämtli counter
+    let monatDone = 0;
+    for (let i = 0; i < 5; i++) {
+        if (db.monat[`${todayKey}-C${i}`]?.val) monatDone++;
+    }
+    document.getElementById('mobile-monat').textContent = `${monatDone}/5`;
+}
+
+// Initialize month selectors
+function initMonthSelectors() {
+    const monthHtml = months.map((month, index) => `
+        <button class="month-btn ${currentMonth === index ? 'active' : ''}" 
+                onclick="setCurrentMonth(${index})">
+            ${month}
+        </button>
+    `).join('');
+    
+    document.getElementById('nass-months').innerHTML = monthHtml;
+    document.getElementById('seal-months').innerHTML = monthHtml;
+    document.getElementById('rdg-months').innerHTML = monthHtml;
+    document.getElementById('monat-months').innerHTML = monthHtml;
+}
+
+// Set current month and refresh view
+function setCurrentMonth(monthIndex) {
+    currentMonth = monthIndex;
+    
+    // Update all month buttons
+    document.querySelectorAll('.month-btn').forEach((btn, index) => {
+        btn.classList.toggle('active', index === monthIndex);
+    });
+    
+    // Refresh current section
+    const activeSection = document.querySelector('.section.active').id.replace('section-', '');
+    if (activeSection !== 'dashboard') {
+        renderSection(activeSection);
+    }
+}
+
+// Show section
+function showSection(sectionName) {
+    // Hide all sections
+    document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Remove active from all nav items
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Show selected section
+    document.getElementById(`section-${sectionName}`).classList.add('active');
+    
+    // Activate nav item (except for dashboard which has special nav)
+    if (sectionName !== 'dashboard') {
+        const navItem = Array.from(document.querySelectorAll('.nav-item')).find(item => 
+            item.textContent.includes(sectionName.charAt(0).toUpperCase() + sectionName.slice(1))
+        );
+        if (navItem) navItem.classList.add('active');
+    } else {
+        document.querySelectorAll('.nav-item')[0].classList.add('active');
+    }
+    
+    // Render section content
+    if (sectionName !== 'dashboard') {
+        renderSection(sectionName);
+    }
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+}
+
+// Render section content
+function renderSection(sectionName) {
+    const daysInMonth = new Date(2026, currentMonth + 1, 0).getDate();
+    let rowsHtml = '';
+    
+    if (sectionName === 'nass') {
+        for (let day = 1; day <= daysInMonth; day++) {
+            const todayKey = `M${currentMonth}-D${day}`;
+            const isToday = (currentMonth === new Date().getMonth() && day === currentDay);
+            
+            rowsHtml += `
+                <div class="mobile-table-row ${isToday ? 'status-ok' : ''}">
+                    <div class="row-date">${day}.${currentMonth + 1}</div>
+                    <div class="row-inputs">
+                        ${Array.from({length: 10}, (_, i) => i + 1).map(i => {
+                            const value = db.nass[`${todayKey}-P${i}`]?.val || '';
+                            return `<input class="mobile-input" 
+                                     placeholder="MA" 
+                                     value="${value}"
+                                     onblur="saveField('nass', '${todayKey}-P${i}', 'val', this.value)">`;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('nass-rows').innerHTML = rowsHtml;
+    }
+    
+    else if (sectionName === 'seal') {
+        for (let day = 1; day <= daysInMonth; day++) {
+            const todayKey = `M${currentMonth}-D${day}`;
+            const isToday = (currentMonth === new Date().getMonth() && day === currentDay);
+            
+            rowsHtml += `
+                <div class="mobile-table-row ${isToday ? 'status-ok' : ''}">
+                    <div class="row-date">${day}.${currentMonth + 1}</div>
+                    <div class="row-inputs">
+                        ${Array.from({length: 4}, (_, i) => i + 1).map(i => {
+                            const status = db.seal[`${todayKey}-S${i}`]?.status || '';
+                            let statusClass = '';
+                            if (status === 'OK') statusClass = 'status-ok';
+                            if (status === 'DEFEKT') statusClass = 'status-defekt';
+                            if (status === 'N.B.') statusClass = 'status-nb';
+                            
+                            return `<select class="mobile-select ${statusClass}" 
+                                     onchange="saveField('seal', '${todayKey}-S${i}', 'status', this.value); this.className='mobile-select '+getStatusClass(this.value)">
+                                <option value="">-</option>
+                                <option value="OK" ${status === 'OK' ? 'selected' : ''}>OK</option>
+                                <option value="DEFEKT" ${status === 'DEFEKT' ? 'selected' : ''}>DEF</option>
+                                <option value="N.B." ${status === 'N.B.' ? 'selected' : ''}>N.B.</option>
+                            </select>`;
+                        }).join('')}
+                        
+                        <select class="mobile-select ${getStatusClass(db.seal[`${todayKey}-S5U`]?.status)}" 
+                                onchange="saveField('seal', '${todayKey}-S5U', 'status', this.value); this.className='mobile-select '+getStatusClass(this.value)">
+                            <option value="">-U-</option>
+                            <option value="OK" ${db.seal[`${todayKey}-S5U`]?.status === 'OK' ? 'selected' : ''}>OK</option>
+                            <option value="DEFEKT" ${db.seal[`${todayKey}-S5U`]?.status === 'DEFEKT' ? 'selected' : ''}>DEF</option>
+                            <option value="N.B." ${db.seal[`${todayKey}-S5U`]?.status === 'N.B.' ? 'selected' : ''}>N.B.</option>
+                        </select>
+                        
+                        <select class="mobile-select ${getStatusClass(db.seal[`${todayKey}-S5B`]?.status)}" 
+                                onchange="saveField('seal', '${todayKey}-S5B', 'status', this.value); this.className='mobile-select '+getStatusClass(this.value)">
+                            <option value="">-B-</option>
+                            <option value="OK" ${db.seal[`${todayKey}-S5B`]?.status === 'OK' ? 'selected' : ''}>OK</option>
+                            <option value="DEFEKT" ${db.seal[`${todayKey}-S5B`]?.status === 'DEFEKT' ? 'selected' : ''}>DEF</option>
+                            <option value="N.B." ${db.seal[`${todayKey}-S5B`]?.status === 'N.B.' ? 'selected' : ''}>N.B.</option>
+                        </select>
+                        
+                        <input class="mobile-input" 
+                               placeholder="VISUM" 
+                               value="${db.seal[`${todayKey}-MA`]?.val || ''}"
+                               onblur="saveField('seal', '${todayKey}-MA', 'val', this.value)">
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('seal-rows').innerHTML = rowsHtml;
+    }
+    
+    else if (sectionName === 'rdg') {
+        for (let day = 1; day <= daysInMonth; day++) {
+            const todayKey = `M${currentMonth}-D${day}`;
+            const isToday = (currentMonth === new Date().getMonth() && day === currentDay);
+            
+            rowsHtml += `
+                <div class="mobile-table-row ${isToday ? 'status-ok' : ''}">
+                    <div class="row-date">${day}.${currentMonth + 1}</div>
+                    <div class="row-inputs">
+                        ${Array.from({length: 12}, (_, i) => i + 1).map(i => {
+                            const data = db.rdg[`${todayKey}-R${i}`] || {};
+                            const statusClass = getStatusClass(data.status);
+                            
+                            return `<div style="display: flex; flex-direction: column; gap: 4px; min-width: 70px; flex-shrink: 0;">
+                                <input class="mobile-input" 
+                                       placeholder="MA" 
+                                       value="${data.ma || ''}"
+                                       onblur="saveField('rdg', '${todayKey}-R${i}', 'ma', this.value)">
+                                <select class="mobile-select ${statusClass}" 
+                                        onchange="saveField('rdg', '${todayKey}-R${i}', 'status', this.value); this.className='mobile-select '+getStatusClass(this.value)">
+                                    <option value="">-</option>
+                                    <option value="OK" ${data.status === 'OK' ? 'selected' : ''}>OK</option>
+                                    <option value="DEFEKT" ${data.status === 'DEFEKT' ? 'selected' : ''}>DEF</option>
+                                    <option value="N.B." ${data.status === 'N.B.' ? 'selected' : ''}>N.B.</option>
+                                </select>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('rdg-rows').innerHTML = rowsHtml;
+    }
+    
+    else if (sectionName === 'monat') {
+        for (let day = 1; day <= daysInMonth; day++) {
+            const todayKey = `M${currentMonth}-D${day}`;
+            const isToday = (currentMonth === new Date().getMonth() && day === currentDay);
+            
+            rowsHtml += `
+                <div class="mobile-table-row ${isToday ? 'status-ok' : ''}">
+                    <div class="row-date">${day}.${currentMonth + 1}</div>
+                    <div class="row-inputs">
+                        ${Array.from({length: 5}, (_, i) => i).map(i => {
+                            const value = db.monat[`${todayKey}-C${i}`]?.val || '';
+                            return `<input class="mobile-input" 
+                                     placeholder="..." 
+                                     value="${value}"
+                                     onblur="saveField('monat', '${todayKey}-C${i}', 'val', this.value)">`;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        document.getElementById('monat-rows').innerHTML = rowsHtml;
+    }
+}
+
+// Helper function for status classes
+function getStatusClass(status) {
+    if (status === 'OK') return 'status-ok';
+    if (status === 'DEFEKT') return 'status-defekt';
+    if (status === 'N.B.') return 'status-nb';
+    return '';
+}
+
+// Save field data
+function saveField(module, key, field, value) {
+    if (!db[module]) db[module] = {};
+    if (!db[module][key]) db[module][key] = {};
+    
+    db[module][key][field] = value;
+    saveData();
+    updateCounters();
+    
+    // Visual feedback
+    const element = event.target;
+    element.style.background = '#dcfce7';
+    setTimeout(() => {
+        element.style.background = '';
+    }, 300);
+}
+
+// Export modal functions
+function showExportModal() {
+    document.getElementById('export-modal').style.display = 'flex';
+}
+
+function hideExportModal() {
+    document.getElementById('export-modal').style.display = 'none';
+}
+
+// Export data functions
+function exportData(module) {
+    showLoading();
+    
+    try {
+        const data = db[module] || {};
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ZSVA_${module}_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        // Show success message
+        alert(`Daten erfolgreich exportiert als ${a.download}`);
+    } catch (error) {
+        alert('Fehler beim Export: ' + error.message);
+    } finally {
+        hideLoading();
+        hideExportModal();
+    }
+}
+
+function exportAllData() {
+    showLoading();
+    
+    try {
+        const allData = {
+            nass: db.nass,
+            seal: db.seal,
+            rdg: db.rdg,
+            monat: db.monat,
+            exportDate: new Date().toISOString()
+        };
+        
+        const jsonStr = JSON.stringify(allData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ZSVA_Alle_Daten_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        alert('Alle Daten erfolgreich exportiert!');
+    } catch (error) {
+        alert('Fehler beim Export: ' + error.message);
+    } finally {
+        hideLoading();
+        hideExportModal();
+    }
+}
+
+// Sync function (for future integration with SharePoint)
+function syncData() {
+    showLoading();
+    
+    setTimeout(() => {
+        hideLoading();
+        alert('Daten synchronisiert!');
+    }, 1000);
+}
+
+// Loading functions
+function showLoading() {
+    document.getElementById('loading').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loading').style.display = 'none';
+}
+
+// Pull-to-refresh simulation
+let touchStartY = 0;
+let touchEndY = 0;
+
+document.addEventListener('touchstart', e => {
+    touchStartY = e.touches[0].clientY;
+});
+
+document.addEventListener('touchmove', e => {
+    touchEndY = e.touches[0].clientY;
+    const pullDistance = touchStartY - touchEndY;
+    
+    if (pullDistance > 100 && window.scrollY === 0) {
+        // Pull to refresh
+        syncData();
+    }
+});
+
+// Initialize app when page loads
+document.addEventListener('DOMContentLoaded', initApp);
+
+// Prevent context menu on long press for better mobile experience
+document.addEventListener('contextmenu', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+        return; // Allow context menu for form elements
+    }
+    e.preventDefault();
+});
+
+// Handle back button (Android)
+if (window.history && window.history.pushState) {
+    window.history.pushState(null, null, window.location.href);
+    window.onpopstate = function() {
+        showSection('dashboard');
+        window.history.pushState(null, null, window.location.href);
+    };
+}
+</script>
+</body>
+</html>
